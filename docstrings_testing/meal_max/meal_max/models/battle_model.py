@@ -101,7 +101,7 @@ class BattleModel:
         Calculates a random battle score for a given meal.
 
         Args:
-            meal (Meal): The meal for which to calculate the battle score.
+            combatant (Meal): The meal for which to calculate the battle score.
 
         Returns:
             int: A randomly generated battle score.
@@ -138,8 +138,11 @@ class BattleModel:
 
         Args:
             combatant_data (Meal): The meal to prepare as a combatant.
+
+        Raises:
+            ValueError: If the combatant list is full.
         """
-        
+
         if len(self.combatants) >= 2:
             logger.error("Attempted to add combatant '%s' but combatants list is full", combatant_data.meal)
             raise ValueError("Combatant list is full, cannot add more combatants.")
