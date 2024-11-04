@@ -49,112 +49,92 @@ check_db() {
 
 ##########################################################
 #
-# Song Management
+# Meal Management
 #
 ##########################################################
 
-clear_catalog() {
-  echo "Clearing the playlist..."
-  curl -s -X DELETE "$BASE_URL/clear-catalog" | grep -q '"status": "success"'
-}
 
-create_song() {
-  artist=$1
-  title=$2
-  year=$3
-  genre=$4
-  duration=$5
+create_meal() {
+  id=$1
+  meal=$2
+  cuisine=$3
+  price=$4
+  difficulty=$5
 
-  echo "Adding song ($artist - $title, $year) to the playlist..."
-  curl -s -X POST "$BASE_URL/create-song" -H "Content-Type: application/json" \
-    -d "{\"artist\":\"$artist\", \"title\":\"$title\", \"year\":$year, \"genre\":\"$genre\", \"duration\":$duration}" | grep -q '"status": "success"'
+  echo "Adding meal ($meal - $cuisine, $price, $difficulty) to the database..."
+  curl -s -X POST "$BASE_URL/create-meal" -H "Content-Type: application/json" \
+    -d "{\"meal\":\"$meal\", \"cuisine\":\"$cuisine\", \"price\":$price, \"difficulty":\"$difficulty}" | grep -q '"status": "success"'
 
   if [ $? -eq 0 ]; then
-    echo "Song added successfully."
+    echo "Meal added successfully."
   else
-    echo "Failed to add song."
+    echo "Failed to add meal."
     exit 1
   fi
 }
 
-delete_song_by_id() {
-  song_id=$1
+delete_meal_by_id() {
+  meal_id=$1
 
-  echo "Deleting song by ID ($song_id)..."
-  response=$(curl -s -X DELETE "$BASE_URL/delete-song/$song_id")
+  echo "Deleting meal by ID ($meal_id)..."
+  response=$(curl -s -X DELETE "$BASE_URL/delete-meal/$meal_id")
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song deleted successfully by ID ($song_id)."
+    echo "Meal deleted successfully by ID ($meal_id)."
   else
-    echo "Failed to delete song by ID ($song_id)."
+    echo "Failed to delete meal by ID ($meal_id)."
     exit 1
   fi
 }
 
-get_all_songs() {
-  echo "Getting all songs in the playlist..."
-  response=$(curl -s -X GET "$BASE_URL/get-all-songs-from-catalog")
+get_leaderboard() {
+  echo "Getting all meals in the database..."
+  response=$(curl -s -X GET "$BASE_URL/get-all-meals-from-database")
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "All songs retrieved successfully."
+    echo "All meals retrieved successfully."
     if [ "$ECHO_JSON" = true ]; then
-      echo "Songs JSON:"
+      echo "Meal JSON:"
       echo "$response" | jq .
     fi
   else
-    echo "Failed to get songs."
+    echo "Failed to get meals."
     exit 1
   fi
 }
 
-get_song_by_id() {
-  song_id=$1
+get_meal_by_id() {
+  meal_id=$1
 
-  echo "Getting song by ID ($song_id)..."
-  response=$(curl -s -X GET "$BASE_URL/get-song-from-catalog-by-id/$song_id")
+  echo "Getting meal by ID ($meal_id)..."
+  response=$(curl -s -X GET "$BASE_URL/get-meal-from-database-by-id/$meal_id")
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song retrieved successfully by ID ($song_id)."
+    echo "Meal retrieved successfully by ID ($meal_id)."
     if [ "$ECHO_JSON" = true ]; then
-      echo "Song JSON (ID $song_id):"
+      echo "Meal JSON (ID $meal_id):"
       echo "$response" | jq .
     fi
   else
-    echo "Failed to get song by ID ($song_id)."
+    echo "Failed to get meal by ID ($meal_id)."
     exit 1
   fi
 }
 
-get_song_by_compound_key() {
-  artist=$1
-  title=$2
-  year=$3
+get_meal_by_name() {
+  meal_name=$2
 
-  echo "Getting song by compound key (Artist: '$artist', Title: '$title', Year: $year)..."
-  response=$(curl -s -X GET "$BASE_URL/get-song-from-catalog-by-compound-key?artist=$(echo $artist | sed 's/ /%20/g')&title=$(echo $title | sed 's/ /%20/g')&year=$year")
+  echo "Getting meal by name ($meal_name)..."
+  response=$(curl -s -X GET "$BASE_URL/get-meal-from-database-by-name/$meal_name")
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song retrieved successfully by compound key."
+    echo "Meal retrieved successfully by name ($meal_name)."
     if [ "$ECHO_JSON" = true ]; then
-      echo "Song JSON (by compound key):"
+      echo "Meal JSON (ID $meal_name):"
       echo "$response" | jq .
     fi
   else
-    echo "Failed to get song by compound key."
+    echo "Failed to get meal by name ($meal_name)."
     exit 1
   fi
 }
 
-get_random_song() {
-  echo "Getting a random song from the catalog..."
-  response=$(curl -s -X GET "$BASE_URL/get-random-song")
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Random song retrieved successfully."
-    if [ "$ECHO_JSON" = true ]; then
-      echo "Random Song JSON:"
-      echo "$response" | jq .
-    fi
-  else
-    echo "Failed to get a random song."
-    exit 1
-  fi
-}
 
 
 ############################################################
