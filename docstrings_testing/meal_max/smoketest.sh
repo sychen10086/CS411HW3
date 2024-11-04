@@ -454,17 +454,17 @@ check_db
 clear_catalog
 
 # Create meals
-create_meal "The Beatles" "Hey Jude" 1968 "Rock" 180
-create_meal "The Rolling Stones" "Paint It Black" 1966 "Rock" 180
-create_meal "The Beatles" "Let It Be" 1970 "Rock" 180
-create_meal "Queen" "Bohemian Rhapsody" 1975 "Rock" 180
-create_meal "Led Zeppelin" "Stairway to Heaven" 1971 "Rock" 180
+create_meal "Pasta" "Italian" 15.0 "MED" 
+create_meal "Burger" "American" 10.0 "HIGH" 
+create_meal "Sushi" "Japanese" 25.0 "LOW" 
+create_meal "Nachos" "Mexican" 7.0 "MED" 
+create_meal "Hotdog" "American" 5.0 "HIGH"
 
 delete_meal_by_id 1
 get_leaderboard
 
 get_meal_by_id 2
-get_meal_by_name "The Beatles" "Let It Be" 1970
+get_meal_by_name "Sushi"
 
 clear_playlist
 
