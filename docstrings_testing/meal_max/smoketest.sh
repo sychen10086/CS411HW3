@@ -453,19 +453,18 @@ check_db
 # Clear the catalog
 clear_catalog
 
-# Create songs
-create_song "The Beatles" "Hey Jude" 1968 "Rock" 180
-create_song "The Rolling Stones" "Paint It Black" 1966 "Rock" 180
-create_song "The Beatles" "Let It Be" 1970 "Rock" 180
-create_song "Queen" "Bohemian Rhapsody" 1975 "Rock" 180
-create_song "Led Zeppelin" "Stairway to Heaven" 1971 "Rock" 180
+# Create meals
+create_meal "The Beatles" "Hey Jude" 1968 "Rock" 180
+create_meal "The Rolling Stones" "Paint It Black" 1966 "Rock" 180
+create_meal "The Beatles" "Let It Be" 1970 "Rock" 180
+create_meal "Queen" "Bohemian Rhapsody" 1975 "Rock" 180
+create_meal "Led Zeppelin" "Stairway to Heaven" 1971 "Rock" 180
 
-delete_song_by_id 1
-get_all_songs
+delete_meal_by_id 1
+get_leaderboard
 
-get_song_by_id 2
-get_song_by_compound_key "The Beatles" "Let It Be" 1970
-get_random_song
+get_meal_by_id 2
+get_meal_by_name "The Beatles" "Let It Be" 1970
 
 clear_playlist
 
