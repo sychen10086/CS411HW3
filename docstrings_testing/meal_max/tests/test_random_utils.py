@@ -1,5 +1,5 @@
 import pytest
-from meal_max.utils.random_utils import get_random  # Assuming random_selection exists in random_utils
+from meal_max.utils.random_utils import get_random
 
 def test_random_selection_list():
     elements = [1, 2, 3, 4]
