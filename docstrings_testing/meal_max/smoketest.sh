@@ -53,6 +53,10 @@ check_db() {
 #
 ##########################################################
 
+clear_meals() {
+  echo "Clearing the table..."
+  curl -s -X DELETE "$BASE_URL/clear-meals" | grep -q '"status": "success"'
+}
 
 create_meal() {
   id=$1
@@ -82,21 +86,6 @@ delete_meal_by_id() {
     echo "Meal deleted successfully by ID ($meal_id)."
   else
     echo "Failed to delete meal by ID ($meal_id)."
-    exit 1
-  fi
-}
-
-get_leaderboard() {
-  echo "Getting all meals in the database..."
-  response=$(curl -s -X GET "$BASE_URL/get-all-meals-from-database")
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "All meals retrieved successfully."
-    if [ "$ECHO_JSON" = true ]; then
-      echo "Meal JSON:"
-      echo "$response" | jq .
-    fi
-  else
-    echo "Failed to get meals."
     exit 1
   fi
 }
@@ -429,29 +418,30 @@ swap_songs_in_playlist() {
 #
 ######################################################
 
-# Function to get the song leaderboard sorted by play count
-get_song_leaderboard() {
-  echo "Getting song leaderboard sorted by play count..."
-  response=$(curl -s -X GET "$BASE_URL/song-leaderboard?sort=play_count")
+# Function to get the meal leaderboard sorted by wins or win_pct
+get_leaderboard() {
+  echo "Getting all meals in the database sorted by win or win_pct..."
+  response=$(curl -s -X GET "$BASE_URL/get-leaderboard?sort=wins")
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song leaderboard retrieved successfully."
+    echo "Meal leaderboard retrieved successfully."
     if [ "$ECHO_JSON" = true ]; then
-      echo "Leaderboard JSON (sorted by play count):"
+      echo "Meal JSON (sorted by wins):"
       echo "$response" | jq .
     fi
   else
-    echo "Failed to get song leaderboard."
+    echo "Failed to get meals leaderboard."
     exit 1
   fi
 }
+
 
 
 # Health checks
 check_health
 check_db
 
-# Clear the catalog
-clear_catalog
+# Clear the meals
+clear_meals
 
 # Create meals
 create_meal "Pasta" "Italian" 15.0 "MED" 
@@ -498,6 +488,5 @@ play_entire_playlist
 play_current_song
 play_rest_of_playlist
 
-get_song_leaderboard
 
 echo "All tests passed successfully!"
