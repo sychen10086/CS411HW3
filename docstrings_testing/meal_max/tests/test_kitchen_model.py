@@ -107,7 +107,7 @@ def test_create_meal_invalid_difficulty():
 
 
 def test_delete_meal(mock_cursor):
-    """Test soft deleting a meal from the catalog by meal ID."""
+    """Test soft deleting a meal from the table by meal ID."""
 
     # Simulate that the meal exists (id = 1)
     mock_cursor.fetchone.return_value = ([False])
@@ -322,7 +322,7 @@ def test_get_leaderboard_ordered_by_wins(mock_cursor):
     # Call the get_leaderboard function with sort_by="wins"
     leaderboard = get_leaderboard(sort_by="wins")
 
-    # Ensure the results are sorted by winss
+    # Ensure the results are sorted by wins
     expected_result = [
         {"id": 2, "meal": "Sushi", "cuisine": "Japanese", "price": 15.0, "difficulty": "HIGH", "battles": 20, "wins": 15, "win_pct": 75.0},
         {"id": 1, "meal": "Pasta", "cuisine": "Italian", "price": 10.0, "difficulty": "MED", "battles": 10, "wins": 8, "win_pct": 80.0},
