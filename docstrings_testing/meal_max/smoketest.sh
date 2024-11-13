@@ -126,310 +126,108 @@ get_meal_by_name() {
 
 
 
-############################################################
+###############################################
 #
-# Playlist Management
+# Battle Management Functions
 #
-############################################################
+###############################################
 
-add_song_to_playlist() {
-  artist=$1
-  title=$2
-  year=$3
+# Create a new battle
+create_battle() {
+  player1=$1
+  player2=$2
 
-  echo "Adding song to playlist: $artist - $title ($year)..."
-  response=$(curl -s -X POST "$BASE_URL/add-song-to-playlist" \
-    -H "Content-Type: application/json" \
-    -d "{\"artist\":\"$artist\", \"title\":\"$title\", \"year\":$year}")
-
+  echo "Creating a battle between $player1 and $player2..."
+  response=$(curl -s -X POST "$BASE_URL/create-battle" -H "Content-Type: application/json" \
+    -d "{\"player1\": \"$player1\", \"player2\": \"$player2\"}")
+  
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song added to playlist successfully."
+    echo "Battle created successfully."
+    battle_id=$(echo "$response" | jq -r '.battle_id')
+    echo "Battle ID: $battle_id"
+  else
+    echo "Failed to create battle."
+    exit 1
+  fi
+}
+
+# Get battle details by ID
+get_battle_by_id() {
+  battle_id=$1
+
+  echo "Getting battle details for ID ($battle_id)..."
+  response=$(curl -s -X GET "$BASE_URL/get-battle/$battle_id")
+  if echo "$response" | grep -q '"status": "success"'; then
+    echo "Battle details retrieved successfully."
     if [ "$ECHO_JSON" = true ]; then
-      echo "Song JSON:"
+      echo "Battle JSON (ID $battle_id):"
       echo "$response" | jq .
     fi
   else
-    echo "Failed to add song to playlist."
+    echo "Failed to get battle details."
     exit 1
   fi
 }
 
-remove_song_from_playlist() {
-  artist=$1
-  title=$2
-  year=$3
-
-  echo "Removing song from playlist: $artist - $title ($year)..."
-  response=$(curl -s -X DELETE "$BASE_URL/remove-song-from-playlist" \
-    -H "Content-Type: application/json" \
-    -d "{\"artist\":\"$artist\", \"title\":\"$title\", \"year\":$year}")
-
+# List all battles
+list_battles() {
+  echo "Listing all battles..."
+  response=$(curl -s -X GET "$BASE_URL/list-battles")
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song removed from playlist successfully."
+    echo "All battles listed successfully."
     if [ "$ECHO_JSON" = true ]; then
-      echo "Song JSON:"
+      echo "Battles JSON:"
       echo "$response" | jq .
     fi
   else
-    echo "Failed to remove song from playlist."
+    echo "Failed to list battles."
     exit 1
   fi
 }
 
-remove_song_by_track_number() {
-  track_number=$1
+# Delete a battle by ID
+delete_battle() {
+  battle_id=$1
 
-  echo "Removing song by track number: $track_number..."
-  response=$(curl -s -X DELETE "$BASE_URL/remove-song-from-playlist-by-track-number/$track_number")
-
-  if echo "$response" | grep -q '"status":'; then
-    echo "Song removed from playlist by track number ($track_number) successfully."
-  else
-    echo "Failed to remove song from playlist by track number."
-    exit 1
-  fi
-}
-
-clear_playlist() {
-  echo "Clearing playlist..."
-  response=$(curl -s -X POST "$BASE_URL/clear-playlist")
-
+  echo "Deleting battle with ID ($battle_id)..."
+  response=$(curl -s -X DELETE "$BASE_URL/delete-battle/$battle_id")
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Playlist cleared successfully."
+    echo "Battle deleted successfully."
   else
-    echo "Failed to clear playlist."
+    echo "Failed to delete battle."
     exit 1
   fi
 }
 
+# Update battle status (e.g., to "in progress" or "completed")
+update_battle_status() {
+  battle_id=$1
+  new_status=$2
 
-############################################################
-#
-# Play Playlist
-#
-############################################################
-
-play_current_song() {
-  echo "Playing current song..."
-  response=$(curl -s -X POST "$BASE_URL/play-current-song")
-
+  echo "Updating status of battle ID ($battle_id) to $new_status..."
+  response=$(curl -s -X PATCH "$BASE_URL/update-battle-status" -H "Content-Type: application/json" \
+    -d "{\"battle_id\": \"$battle_id\", \"status\": \"$new_status\"}")
+  
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Current song is now playing."
+    echo "Battle status updated successfully."
   else
-    echo "Failed to play current song."
+    echo "Failed to update battle status."
     exit 1
   fi
 }
 
-rewind_playlist() {
-  echo "Rewinding playlist..."
-  response=$(curl -s -X POST "$BASE_URL/rewind-playlist")
-
+# Fetch leaderboard (e.g., based on battle outcomes)
+get_battle_leaderboard() {
+  echo "Retrieving battle leaderboard..."
+  response=$(curl -s -X GET "$BASE_URL/battle-leaderboard")
   if echo "$response" | grep -q '"status": "success"'; then
-    echo "Playlist rewound successfully."
-  else
-    echo "Failed to rewind playlist."
-    exit 1
-  fi
-}
-
-get_all_songs_from_playlist() {
-  echo "Retrieving all songs from playlist..."
-  response=$(curl -s -X GET "$BASE_URL/get-all-songs-from-playlist")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "All songs retrieved successfully."
+    echo "Battle leaderboard retrieved successfully."
     if [ "$ECHO_JSON" = true ]; then
-      echo "Songs JSON:"
+      echo "Leaderboard JSON:"
       echo "$response" | jq .
     fi
   else
-    echo "Failed to retrieve all songs from playlist."
-    exit 1
-  fi
-}
-
-get_song_from_playlist_by_track_number() {
-  track_number=$1
-  echo "Retrieving song by track number ($track_number)..."
-  response=$(curl -s -X GET "$BASE_URL/get-song-from-playlist-by-track-number/$track_number")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song retrieved successfully by track number."
-    if [ "$ECHO_JSON" = true ]; then
-      echo "Song JSON:"
-      echo "$response" | jq .
-    fi
-  else
-    echo "Failed to retrieve song by track number."
-    exit 1
-  fi
-}
-
-get_current_song() {
-  echo "Retrieving current song..."
-  response=$(curl -s -X GET "$BASE_URL/get-current-song")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Current song retrieved successfully."
-    if [ "$ECHO_JSON" = true ]; then
-      echo "Current Song JSON:"
-      echo "$response" | jq .
-    fi
-  else
-    echo "Failed to retrieve current song."
-    exit 1
-  fi
-}
-
-get_playlist_length_duration() {
-  echo "Retrieving playlist length and duration..."
-  response=$(curl -s -X GET "$BASE_URL/get-playlist-length-duration")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Playlist length and duration retrieved successfully."
-    if [ "$ECHO_JSON" = true ]; then
-      echo "Playlist Info JSON:"
-      echo "$response" | jq .
-    fi
-  else
-    echo "Failed to retrieve playlist length and duration."
-    exit 1
-  fi
-}
-
-go_to_track_number() {
-  track_number=$1
-  echo "Going to track number ($track_number)..."
-  response=$(curl -s -X POST "$BASE_URL/go-to-track-number/$track_number")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Moved to track number ($track_number) successfully."
-  else
-    echo "Failed to move to track number ($track_number)."
-    exit 1
-  fi
-}
-
-play_entire_playlist() {
-  echo "Playing entire playlist..."
-  curl -s -X POST "$BASE_URL/play-entire-playlist" | grep -q '"status": "success"'
-  if [ $? -eq 0 ]; then
-    echo "Entire playlist played successfully."
-  else
-    echo "Failed to play entire playlist."
-    exit 1
-  fi
-}
-
-# Function to play the rest of the playlist
-play_rest_of_playlist() {
-  echo "Playing rest of the playlist..."
-  curl -s -X POST "$BASE_URL/play-rest-of-playlist" | grep -q '"status": "success"'
-  if [ $? -eq 0 ]; then
-    echo "Rest of playlist played successfully."
-  else
-    echo "Failed to play rest of playlist."
-    exit 1
-  fi
-}
-
-############################################################
-#
-# Arrange Playlist
-#
-############################################################
-
-move_song_to_beginning() {
-  artist=$1
-  title=$2
-  year=$3
-
-  echo "Moving song ($artist - $title, $year) to the beginning of the playlist..."
-  response=$(curl -s -X POST "$BASE_URL/move-song-to-beginning" \
-    -H "Content-Type: application/json" \
-    -d "{\"artist\": \"$artist\", \"title\": \"$title\", \"year\": $year}")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song moved to the beginning successfully."
-  else
-    echo "Failed to move song to the beginning."
-    exit 1
-  fi
-}
-
-move_song_to_end() {
-  artist=$1
-  title=$2
-  year=$3
-
-  echo "Moving song ($artist - $title, $year) to the end of the playlist..."
-  response=$(curl -s -X POST "$BASE_URL/move-song-to-end" \
-    -H "Content-Type: application/json" \
-    -d "{\"artist\": \"$artist\", \"title\": \"$title\", \"year\": $year}")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song moved to the end successfully."
-  else
-    echo "Failed to move song to the end."
-    exit 1
-  fi
-}
-
-move_song_to_track_number() {
-  artist=$1
-  title=$2
-  year=$3
-  track_number=$4
-
-  echo "Moving song ($artist - $title, $year) to track number ($track_number)..."
-  response=$(curl -s -X POST "$BASE_URL/move-song-to-track-number" \
-    -H "Content-Type: application/json" \
-    -d "{\"artist\": \"$artist\", \"title\": \"$title\", \"year\": $year, \"track_number\": $track_number}")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Song moved to track number ($track_number) successfully."
-  else
-    echo "Failed to move song to track number ($track_number)."
-    exit 1
-  fi
-}
-
-swap_songs_in_playlist() {
-  track_number1=$1
-  track_number2=$2
-
-  echo "Swapping songs at track numbers ($track_number1) and ($track_number2)..."
-  response=$(curl -s -X POST "$BASE_URL/swap-songs-in-playlist" \
-    -H "Content-Type: application/json" \
-    -d "{\"track_number_1\": $track_number1, \"track_number_2\": $track_number2}")
-
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Songs swapped successfully between track numbers ($track_number1) and ($track_number2)."
-  else
-    echo "Failed to swap songs."
-    exit 1
-  fi
-}
-
-######################################################
-#
-# Leaderboard
-#
-######################################################
-
-# Function to get the meal leaderboard sorted by wins or win_pct
-get_leaderboard() {
-  echo "Getting all meals in the database sorted by win or win_pct..."
-  response=$(curl -s -X GET "$BASE_URL/get-leaderboard?sort=wins")
-  if echo "$response" | grep -q '"status": "success"'; then
-    echo "Meal leaderboard retrieved successfully."
-    if [ "$ECHO_JSON" = true ]; then
-      echo "Meal JSON (sorted by wins):"
-      echo "$response" | jq .
-    fi
-  else
-    echo "Failed to get meals leaderboard."
+    echo "Failed to retrieve leaderboard."
     exit 1
   fi
 }
@@ -456,37 +254,26 @@ get_leaderboard
 get_meal_by_id 2
 get_meal_by_name "Sushi"
 
-clear_playlist
+# Create and retrieve battles
+create_battle "Alice" "Bob"
+create_battle "Charlie" "Dave"
+battle_id_1=$(create_battle "Eve" "Frank")
 
-add_song_to_playlist "The Rolling Stones" "Paint It Black" 1966
-add_song_to_playlist "Queen" "Bohemian Rhapsody" 1975
-add_song_to_playlist "Led Zeppelin" "Stairway to Heaven" 1971
-add_song_to_playlist "The Beatles" "Let It Be" 1970
+get_battle_by_id "$battle_id_1"
 
-remove_song_from_playlist "The Beatles" "Let It Be" 1970
-remove_song_by_track_number 2
+# List all battles
+list_battles
 
-get_all_songs_from_playlist
+# Update battle status
+update_battle_status "$battle_id_1" "in progress"
+update_battle_status "$battle_id_1" "completed"
 
-add_song_to_playlist "Queen" "Bohemian Rhapsody" 1975
-add_song_to_playlist "The Beatles" "Let It Be" 1970
+# Retrieve leaderboard
+get_battle_leaderboard
 
-move_song_to_beginning "The Beatles" "Let It Be" 1970
-move_song_to_end "Queen" "Bohemian Rhapsody" 1975
-move_song_to_track_number "Led Zeppelin" "Stairway to Heaven" 1971 2
-swap_songs_in_playlist 1 2
-
-get_all_songs_from_playlist
-get_song_from_playlist_by_track_number 1
-
-get_playlist_length_duration
-
-play_current_song
-rewind_playlist
-
-play_entire_playlist
-play_current_song
-play_rest_of_playlist
+# Delete a battle and verify it’s deleted
+delete_battle "$battle_id_1"
+list_battles
 
 
 echo "All tests passed successfully!"
